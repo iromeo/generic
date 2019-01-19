@@ -40,9 +40,15 @@ key_mapping= command_options['key_mapping']
 
 # construct command:
 for  key in key_mapping:
-    if key in cluster_param:
-        command+=" "
-        command+=key_mapping[key].format(cluster_param[key])
+    if (key in cluster_param) and cluster_param[key]:
+        # Do not split with ws, e.g. is critical for qsub -l mem,time,threads args
+
+        # Let's allow to use all variables here
+        opts = {**cluster_param}
+        for k in job_properties:
+            if (k != 'key_mapping') and (k not in opts):
+                opts[k] = job_properties[k]
+        command+=key_mapping[key].format(**opts)
 
 command+=' {}'.format(jobscript)
 
@@ -54,5 +60,8 @@ if p.returncode != 0:
     raise Exception("Job can't be submitted\n"+output.decode("utf-8")+error.decode("utf-8"))
 else:
     res= output.decode("utf-8")
-    jobid= int(res.strip().split()[-1])
-    print(jobid)
+    # not always int value
+    #jobid= int(res.strip().split()[-1])
+    #print(jobid)
+    print(res)
+
