@@ -12,7 +12,7 @@ To deploy this profile,
 
     mkdir -p ~/.config/snakemake
     cd ~/.config/snakemake
-    cookiecutter https://github.com/Snakemake-Profiles/generic.git
+    cookiecutter https://github.com/iromeo/generic.git
 
 
 Then, you can run Snakemake with
