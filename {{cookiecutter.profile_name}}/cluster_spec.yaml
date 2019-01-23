@@ -18,33 +18,33 @@ __default__:
     slurm:
       command: "sbatch --parsable"
       key_mapping:
-        name: "--job-name={}"
-        threads: "-n {}"
-        mem: "--mem={}g"
-        account: "--account={}"
-        queue: "--partition={}"
-        time: "--time={}"
-        nodes: "-N {}"
+        name: " --job-name={}"
+        threads: " -n {}"
+        mem: " --mem={}g"
+        account: " --account={}"
+        queue: " --partition={}"
+        time: " --time={}"
+        nodes: " -N {}"
     pbs:
       command: "qsub"
       key_mapping:
-        name: "-N {}"
-        account: "-W group_list={}"
-        queue: "-q {}"
-        nodes: "-l nodes={}" # -l has to be on first resource element
-        threads: "ppn={}"
-        mem: "mem={}gb"
+        name: " -N {}"
+        account: " -W group_list={}"
+        queue: " -q {}"
+        nodes: " -l nodes={}" # -l has to be on first resource element
+        threads: ":ppn={},"
+        mem: "mem={}gb,"
         time: "walltime={}00" #min= seconds x 100
     lsf:
       command: "bsub"
       key_mapping:
-        name: "-J {}"
-        threads: "-n {}"
-        mem: "-M {}000000"
-        account: "-P {}"
-        queue: "-q {}"
-        time: "-W {}"
-        nodes: "-C {}"
+        name: " -J {}"
+        threads: " -n {}"
+        mem: " -M {}000000"
+        account: " -P {}"
+        queue: " -q {}"
+        time: " -W {}"
+        nodes: " -C {}"
 
 
 
