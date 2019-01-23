@@ -24,9 +24,9 @@ cluster_param['name'] = job_properties['rule']
 if 'threads' in job_properties:
     cluster_param["threads"] = job_properties["threads"]
 
-for res in ['time', 'mem']:
-    if res in job_properties["resources"]:
-        cluster_param[res] = job_properties["resources"][res]
+# resource options overrides defaults:
+for key in job_properties["resources"]:
+    cluster_param[key] = job_properties["resources"][key]
 
 # check which system you are on and load command command_options
 
@@ -35,17 +35,21 @@ command = command_options['command']
 
 key_mapping = command_options['key_mapping']
 
+# Let's allow key mapping to use all variables here:
+key_mapping_vars = {**cluster_param}
+for k in job_properties:
+    if (k != 'key_mapping') and (k not in key_mapping_vars):
+        key_mapping_vars[k] = job_properties[k]
+
 # construct command:
 for key in key_mapping:
-    if (key in cluster_param) and cluster_param[key]:
-        # Do not split with ws, e.g. is critical for qsub -l mem,time,threads args
 
-        # Let's allow to use all variables here
-        opts = {**cluster_param}
-        for k in job_properties:
-            if (k != 'key_mapping') and (k not in opts):
-                opts[k] = job_properties[k]
-        command += key_mapping[key].format(**opts)
+    # for each cluster param key with not empty value:
+    if (key in cluster_param) and cluster_param[key]:
+
+        # Do not split with ws, e.g. is critical for 'qsub', where
+        # '-l' option has value "mem,time,threads args"
+        command += key_mapping[key].format(**key_mapping_vars)
 
 command += ' {}'.format(jobscript)
 
