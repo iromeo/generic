@@ -31,7 +31,7 @@ for key in job_properties["resources"]:
 # params overrides defaults
 job_params = job_properties["params"]
 rule_params_options = cluster_param.get("rule_params_options", "")
-for key in job_params & {k.strip() for k in rule_params_options.split(',')}:
+for key in job_params.keys() & {k.strip() for k in rule_params_options.split(',')}:
     cluster_param[key] = job_params[key]
 
 # check which system you are on and load command command_options
