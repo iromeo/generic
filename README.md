@@ -9,11 +9,21 @@ The units are minutes and GB but can be changed.
 ## Deploy profile
 
 To deploy this profile,
-
+```bash
     mkdir -p ~/.config/snakemake
     cd ~/.config/snakemake
     cookiecutter https://github.com/iromeo/generic.git
+```
 
+Configure options, e.g:
+```bash
+profile_name [myprofile]: generic_qsub
+cluster_system [pbs]:
+default_queue [debug]:
+default_mem_GB [10]: 4
+default_threads [8]: 4
+default_time_min [300]: 30
+```
 
 Then, you can run Snakemake with
 
