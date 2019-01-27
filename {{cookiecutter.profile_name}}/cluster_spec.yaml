@@ -12,6 +12,9 @@ __default__:
   queue: "{{cookiecutter.default_queue}}" # required
   nodes: 1
 
+# Comma separated options keys list from rule 'params' section which could override default option
+# values
+#  rule_params_options: "queue, account"
 
 # only parameters defined in key_mapping (see below) are passed to the command in the order specified.
   command_options:
