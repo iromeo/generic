@@ -2,6 +2,7 @@
 
 
 import sys
+import os
 from subprocess import Popen, PIPE
 
 
@@ -14,6 +15,9 @@ from snakemake.utils import read_job_properties
 
 jobscript = sys.argv[1]
 job_properties = read_job_properties(jobscript)
+
+# process pid
+job_properties['pid'] = os.getpid()
 
 # default paramters defined in cluster_spec (accessed via snakemake read_job_properties)
 cluster_param = job_properties["cluster"]
