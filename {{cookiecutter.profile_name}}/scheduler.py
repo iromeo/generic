@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-
+import re
 import sys
 import os
 from subprocess import Popen, PIPE
@@ -71,7 +71,13 @@ if p.returncode != 0:
     raise Exception("Job can't be submitted\n" + output.decode("utf-8") + error.decode("utf-8"))
 else:
     res = output.decode("utf-8")
-    # not always int value
-    # jobid= int(res.strip().split()[-1])
-    # print(jobid)
-    print(res)
+
+    # Result could be some text that contains job id
+    # LSF case:
+    matcher = re.match("Job <(\\d+)> is submitted", res)
+    if matcher:
+        jobid = matcher[1]
+    else:
+        jobid = res
+
+    print(jobid)

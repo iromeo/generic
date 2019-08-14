@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 
-import os
 import sys
-import warnings
 import subprocess
 
 jobid = sys.argv[1]
+# print("Checking status for Job ID <" + jobid + ">...", file=sys.stderr)
 
 out = subprocess.run(['bjobs', '-noheader', jobid], stdout=subprocess.PIPE).stdout.decode('utf-8')
 
