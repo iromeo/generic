@@ -3,6 +3,7 @@
 import re
 import sys
 import os
+import shlex
 from subprocess import Popen, PIPE
 
 
@@ -19,7 +20,7 @@ job_properties = read_job_properties(jobscript)
 # process pid
 job_properties['pid'] = os.getpid()
 
-# default paramters defined in cluster_spec (accessed via snakemake read_job_properties)
+# default parameters defined in cluster_spec (accessed via snakemake read_job_properties)
 cluster_param = job_properties["cluster"]
 
 cluster_param['name'] = job_properties['rule']
@@ -54,18 +55,30 @@ for k in job_properties:
 # construct command:
 for key in key_mapping:
 
-    # for each cluster param key with not empty value:
-    if (key in cluster_param) and cluster_param[key]:
+    command_arg = key_mapping[key]
+    command_arg_keys = sorted(set(re.findall("\\{([a-z][a-z_0-9]*)\\}", command_arg)))
 
+    # for each cluster param key with not empty value:
+    command_arg_keys_2_defined = [(k, k in key_mapping_vars and bool(key_mapping_vars[k])) for k in command_arg_keys]
+
+    undefined_args = [k for k, defined in command_arg_keys_2_defined if not defined]
+
+    if len(undefined_args) == 0:
         # Do not split with ws, e.g. is critical for 'qsub', where
         # '-l' option has value "mem,time,threads args"
         command += key_mapping[key].format(**key_mapping_vars)
+    else:
+        eprint("Key '{}' ignored: Undefined variables [{}] in: {}".format(
+            key, ", ".join(undefined_args), command_arg
+        ))
 
 command += ' {}'.format(jobscript)
 
-eprint("submit command: " + command)
+eprint("Submit job command:", command)
+args = shlex.split(command)
+eprint("\nSubmit job command args:\n      {}".format(args))
 
-p = Popen(command.split(' '), stdout=PIPE, stderr=PIPE)
+p = Popen(args, stdout=PIPE, stderr=PIPE)
 output, error = p.communicate()
 if p.returncode != 0:
     raise Exception("Job can't be submitted\n" + output.decode("utf-8") + error.decode("utf-8"))

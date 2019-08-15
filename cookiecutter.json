@@ -1,8 +1,11 @@
 {
-  "profile_name": "myprofile",
+  "profile_name": "pbs_profile",
   "cluster_system": "pbs",
-  "default_queue": "debug",
-  "default_mem_GB": "10",
-  "default_threads": "8",
+  "default_job_group": "",
+  "default_queue": "",
+  "default_docker": "",
+  "default_email": "",
+  "default_mem_GB": "4",
+  "default_threads": "1",
   "default_time_min": "300"
 }

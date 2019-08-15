@@ -2,60 +2,78 @@
 __default__:
   system: "{{cookiecutter.cluster_system}}" #check if system is defined below
 
-# default parameter for all rules
-# for steps, where memory/threads are not specified in the Snakefilecan
+  # default parameter for all rules
+  # for steps, where memory/threads are not specified in the Snakefile
 
+  group: "{{cookiecutter.default_job_group}}"
+  queue: "{{cookiecutter.default_queue}}"
+  docker: "{{cookiecutter.default_docker}}" # e.g. "ubuntu:latest"
+  email: "{{cookiecutter.default_email}}"
   #account: ""
   time: "{{cookiecutter.default_time_min}}" # minutes
   mem: "{{cookiecutter.default_mem_GB}}" # GB
   threads: "{{cookiecutter.default_threads}}"
-  queue: "{{cookiecutter.default_queue}}" # required
+
   nodes: 1
 
 # Comma separated options keys list from rule 'params' section which could override default option
 # values
-#  rule_params_options: "queue, account"
+#  rule_params_options: "queue, account, sampleid"
 
 # only parameters defined in key_mapping (see below) are passed to the command in the order specified.
   command_options:
+    # --------- SLURM ---------
     slurm:
       command: "sbatch --parsable"
       key_mapping:
-        name: " --job-name={}"
-        threads: " -n {}"
-        mem: " --mem={}g"
-        account: " --account={}"
-        queue: " --partition={}"
-        time: " --time={}"
-        nodes: " -N {}"
+        name: " --job-name={name}"
+        threads: " -n {threads}"
+        mem: " --mem={mem}g"
+        #mem_ram: " --mem={mem_ram}g"
+        account: " --account={account}"
+        queue: " --partition={queue}"
+        time: " --time={time}"
+        nodes: " -N {nodes}"
+
+    # --------- PBS ---------
     pbs:
       command: "qsub"
       key_mapping:
-        name: " -N {}"
-        account: " -W group_list={}"
-        queue: " -q {}"
-        nodes: " -l nodes={}" # -l has to be on first resource element
-        threads: ":ppn={},"
-        mem: "mem={}gb,"
-        time: "walltime={}00" #min= seconds x 100
+        name: " -N sj{jobid}.{name}.{pid}"
+        queue: " -q {queue}"
+
+        nodes: " -l nodes={nodes}" # -l has to be on first resource element
+        threads: ":ppn={threads},"
+        mem: "vmem={mem}gb,"
+        mem_ram: "mem={mem_ram}gb,"
+        time: "walltime={time}:00" # minutes [[HH:]MM:]SS
+
+        merge_std: " -j oe" # merge stdout, stderr
+        log: " -o {log}_job.log"
+
+    # --------- LSF ---------
     lsf:
       command: "bsub"
+      # command: "bsub {command_args} /bin/bash -c 'source /opt/conda/.bashrc && source ~/lsf_host.conf && {jobscript}'"
+
       key_mapping:
-        name: " -J {}"
-        threads: " -n {}"
-        mem: " -M {}000000"
-        account: " -P {}"
-        queue: " -q {}"
-        time: " -W {}"
-        nodes: " -C {}"
+        resources: " -R 'select[mem>{mem_ram}000] rusage[mem={mem_ram}000]'"
+        name: " -J sj{jobid}.{name}.{pid}"
+        queue: " -q {queue}"
+        threads: " -n {threads}"
+        #mem: " ??? {mem} "  # virtual memory ~ 'mem' is in gb
+        mem_ram: " -M {mem_ram}000000"  # ~ 'mem_ram' is in gb
+        time: " -W {time}:00"  # time in hours, -W [hour:]minute
+        log: " -oo {log}_job.log" # rewrite log file, send stderr and stdout to log
+        group: " -g {group}"
+        email: " -N -u {email}"
+        docker: "  -a 'docker({docker})'"
+        account: " -P {account}"
 
-
-
+# --------- Other ---------
 # for other cluster systems see: https://slurm.schedmd.com/rosetta.pdf
 
-
-
-
+# --------- Rule Specific ---------
 # specific parameters for certain rules, which need more time/memory
 
 #run_assembler:
