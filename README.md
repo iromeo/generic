@@ -17,6 +17,7 @@ To install this profile,
 ```bash
     mkdir -p ~/.config/snakemake
     cd ~/.config/snakemake
+    conda install cookiecutter
     cookiecutter https://github.com/iromeo/generic.git
 ```
 
