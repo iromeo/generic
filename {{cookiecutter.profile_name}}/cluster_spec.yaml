@@ -11,7 +11,8 @@ __default__:
   email: "{{cookiecutter.default_email}}"
   #account: ""
   time: "{{cookiecutter.default_time_min}}" # minutes
-  mem: "{{cookiecutter.default_mem_GB}}" # GB
+  mem: "{{cookiecutter.default_mem_GB}}" # GB, max process virtual memory
+  mem_ram: "{{cookiecutter.default_mem_GB}}" # GB, max RAM
   threads: "{{cookiecutter.default_threads}}"
 
   nodes: 1
