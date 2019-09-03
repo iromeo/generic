@@ -23,7 +23,14 @@ job_properties['pid'] = os.getpid()
 # default parameters defined in cluster_spec (accessed via snakemake read_job_properties)
 cluster_param = job_properties["cluster"]
 
-cluster_param['name'] = job_properties['rule']
+# 'rule' isn't defined for group jobs
+cluster_param['name'] = job_properties.get(
+    'rule',  # try rule name
+    job_properties.get(
+        'groupid',  # try as group
+        job_properties['jobid']  # should always work
+    )
+)
 
 # log is array, so take first file if log option is provided
 # and the array isn't empty (job_properties could contain empty array
@@ -31,7 +38,10 @@ cluster_param['name'] = job_properties['rule']
 if job_properties.get('log', []):
     cluster_param['log'] = job_properties['log'][0]
 else:
-    cluster_param['log'] = "{}.{}.log".format(job_properties['jobid'], job_properties['rule'])
+    # if log not specified put job logs into 'cluster_logs' folder
+    cluster_param['log'] = "job_log.{}.{}.log".format(
+        cluster_param['name'], job_properties['jobid'],
+    )
 
 # overwrite default parameters if defined in rule (or config file)
 if 'threads' in job_properties:
@@ -41,14 +51,18 @@ if 'threads' in job_properties:
 for key in job_properties["resources"]:
     cluster_param[key] = job_properties["resources"][key]
 
-# params overrides defaults
-job_params = job_properties["params"]
+# params overrides defaults. 'params' section isn't available for job groups
+# e.g.
+# 1. add 'rule_params_options: email, docker' line into your cluster profile.
+# 2. specify 'email=user@domain.com, docker=ubuntu:latest' in rule 'params:'
+# section, so cluster will submit a task with specified e-mail and docker
+# container instead of defaults
+job_params = job_properties.get("params", {})
 rule_params_options = cluster_param.get("rule_params_options", "")
 for key in job_params.keys() & {k.strip() for k in rule_params_options.split(',')}:
     cluster_param[key] = job_params[key]
 
 # check which system you are on and load command command_options
-
 command_options = cluster_param['command_options'][cluster_param['system']]
 command = command_options['command']
 
