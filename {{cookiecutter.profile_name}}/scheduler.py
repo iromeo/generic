@@ -25,8 +25,10 @@ cluster_param = job_properties["cluster"]
 
 cluster_param['name'] = job_properties['rule']
 
-# log is array, so take first file
-if 'log' in job_properties:
+# log is array, so take first file if log option is provided
+# and the array isn't empty (job_properties could contain empty array
+#  if log section isn't provided by rule)
+if job_properties.get('log', []):
     cluster_param['log'] = job_properties['log'][0]
 else:
     cluster_param['log'] = "{}.{}.log".format(job_properties['jobid'], job_properties['rule'])
