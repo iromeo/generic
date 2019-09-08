@@ -1,6 +1,6 @@
 # Enhanced Generic Profile
 
-This profile configures Snakemake to run on any cluster system. This is improved version of generic profile (https://github.com/Snakemake-Profiles/generic) with enhanced cluster profile syntax.
+This profile configures Snakemake to run on any cluster system. This is an improved version of generic profile (https://github.com/Snakemake-Profiles/generic) with enhanced cluster profile syntax.
 
 Supported cluster management systems:
 * PBS
