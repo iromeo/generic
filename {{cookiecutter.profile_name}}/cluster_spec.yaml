@@ -53,6 +53,8 @@ __default__:
         log: " -o {log}_job.log"
 
     # --------- LSF ---------
+    # Assume settings:
+    # export LSF_UNIT_FOR_LIMITS=KB
     lsf:
       command: "bsub"
       # command: "bsub {command_args} /bin/bash -c 'source /opt/conda/.bashrc && source ~/lsf_host.conf && {jobscript}'"
@@ -64,7 +66,7 @@ __default__:
         threads: " -n {threads}"
         #mem: " ??? {mem} "  # virtual memory ~ 'mem' is in gb
         mem_ram: " -M {mem_ram}000000"  # ~ 'mem_ram' is in gb
-        time: " -W {time}:00"  # time in hours, -W [hour:]minute
+        time: " -W {time}"  # time in minutes, -W [hour:]minute
         log: " -oo {log}_job.log" # rewrite log file, send stderr and stdout to log
         group: " -g {group}"
         email: " -N -u {email}"
