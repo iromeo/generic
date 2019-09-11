@@ -11,7 +11,7 @@ __default__:
   email: "{{cookiecutter.default_email}}"
   #account: ""
   time: "{{cookiecutter.default_time_min}}" # minutes
-  mem: "{{cookiecutter.default_mem_GB}}" # GB, max process virtual memory
+  vmem: "{{cookiecutter.default_mem_GB}}" # GB, max process virtual memory
   mem_ram: "{{cookiecutter.default_mem_GB}}" # GB, max RAM
   threads: "{{cookiecutter.default_threads}}"
 
@@ -29,7 +29,7 @@ __default__:
       key_mapping:
         name: " --job-name={name}"
         threads: " -n {threads}"
-        mem: " --mem={mem}g"
+        vmem: " --mem={vmem}g"
         #mem_ram: " --mem={mem_ram}g"
         account: " --account={account}"
         queue: " --partition={queue}"
@@ -45,7 +45,7 @@ __default__:
 
         nodes: " -l nodes={nodes}" # -l has to be on first resource element
         threads: ":ppn={threads},"
-        mem: "vmem={mem}gb,"
+        vmem: "vmem={vmem}gb,"
         mem_ram: "mem={mem_ram}gb,"
         time: "walltime={time}:00" # minutes [[HH:]MM:]SS
 
@@ -53,19 +53,18 @@ __default__:
         log: " -o {log}_job.log"
 
     # --------- LSF ---------
-    # Assume settings:
-    # export LSF_UNIT_FOR_LIMITS=KB
     lsf:
       command: "bsub"
       # command: "bsub {command_args} /bin/bash -c 'source /opt/conda/.bashrc && source ~/lsf_host.conf && {jobscript}'"
 
       key_mapping:
-        resources: " -R 'select[mem>{mem_ram}000] rusage[mem={mem_ram}000]'"
+        resources: " -R 'select[mem>{mem_ram}000] rusage[mem={mem_ram}000]'" # in mb
+        #resources: " -R 'select[mem>{mem_ram}000,swp>{vmem}000] rusage[mem={mem_ram}000,swp={vmem}000]'"
         name: " -J sj{jobid}.{name}.{pid}"
         queue: " -q {queue}"
         threads: " -n {threads}"
-        #mem: " ??? {mem} "  # virtual memory ~ 'mem' is in gb
-        mem_ram: " -M {mem_ram}000000"  # ~ 'mem_ram' is in gb
+        #vmem: " -v {vmem}000000"  # swap space (virtual memory) kb value, 'mem' is in gb, by default usually no limit
+        mem_ram: " -M {mem_ram}000000"  # ram mem kb value, 'mem_ram' is in gb
         time: " -W {time}"  # time in minutes, -W [hour:]minute
         log: " -oo {log}_job.log" # rewrite log file, send stderr and stdout to log
         group: " -g {group}"
