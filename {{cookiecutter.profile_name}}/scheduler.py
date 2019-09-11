@@ -103,6 +103,9 @@ eprint("\nSubmit job command args:\n      {}".format(args))
 p = Popen(args, stdout=PIPE, stderr=PIPE)
 output, error = p.communicate()
 if p.returncode != 0:
+    sys.stderr.flush()
+    print('Job STDOUT:', output.decode("utf-8"), file=sys.stderr)
+    print('Job STDERR:', error.decode("utf-8"), file=sys.stderr)
     raise Exception("Job can't be submitted\n" + output.decode("utf-8") + error.decode("utf-8"))
 else:
     res = output.decode("utf-8")
