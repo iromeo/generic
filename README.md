@@ -21,7 +21,7 @@ To install this profile,
     mkdir -p ~/.config/snakemake
     cd ~/.config/snakemake
     conda install cookiecutter
-    cookiecutter https://github.com/iromeo/generic.git
+    cookiecutter https://github.com/iromeo/generic-enhanced.git
 ```
 
 Configure default options, e.g:
