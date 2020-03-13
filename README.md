@@ -23,8 +23,9 @@ To install this profile,
 
 Configure default options, e.g:
 ```bash
-profile_name [myprofile]: generic_qsub
-cluster_system [pbs]:
+profile_name [my_profile]: generic_qsub
+cluster_system [pbs/lsf/slurm]: pbs
+submission_command_prefix []:
 default_job_group []:
 default_queue []:
 default_docker []:
@@ -53,6 +54,7 @@ You can investigate the job via this ID.
 
 Use empty value if option not needed
 * `cluster_system`: `pbs`, `lsf` or `slurm`
+* `submission_command_prefix`: Empty by default. Specify some command which should be done before submission, e.g. `cd $HOME &&` for lsf if your need to submit using `cd $HOME && bsub ..` pattern.
 * `default_job_group`: Specify job group name (used only by LSF in this config)
 * `default_queue`: Job Queue
 * `default_docker`: Docker container name for LSF submission if needed, e.g. "ubuntu:latest"

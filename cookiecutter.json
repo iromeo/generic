@@ -1,6 +1,7 @@
 {
-  "profile_name": "pbs_profile",
-  "cluster_system": "pbs",
+  "profile_name": "my_profile",
+  "cluster_system": "pbs/lsf/slurm",
+  "submission_command_prefix": "",
   "default_job_group": "",
   "default_queue": "",
   "default_docker": "",

@@ -3,7 +3,6 @@
 import re
 import sys
 import os
-import shlex
 from subprocess import Popen, PIPE
 
 
@@ -35,6 +34,7 @@ cluster_param['name'] = job_properties.get(
 # log is array, so take first file if log option is provided
 # and the array isn't empty (job_properties could contain empty array
 #  if log section isn't provided by rule)
+
 if job_properties.get('log', []):
     cluster_param['log'] = job_properties['log'][0]
 else:
@@ -67,10 +67,9 @@ rule_params_options = cluster_param.get("rule_params_options", "")
 for key in job_params.keys() & {k.strip() for k in rule_params_options.split(',')}:
     cluster_param[key] = job_params[key]
 
-# check which system you are on and load command command_options
+# check which system you are on and load command_options
 command_options = cluster_param['command_options'][cluster_param['system']]
-command = command_options['command']
-
+command_line = command_options['command']
 key_mapping = command_options['key_mapping']
 
 # Let's allow key mapping to use all variables here:
@@ -78,6 +77,8 @@ key_mapping_vars = {**cluster_param}
 for k in job_properties:
     if (k != 'key_mapping') and (k not in key_mapping_vars):
         key_mapping_vars[k] = job_properties[k]
+# put 'jobscript' in key mapping to allow wrapping it in 'key_mapping' section of cluster_spec.yaml
+key_mapping_vars['jobscript'] = jobscript
 
 # construct command:
 for key in key_mapping:
@@ -93,19 +94,15 @@ for key in key_mapping:
     if len(undefined_args) == 0:
         # Do not split with ws, e.g. is critical for 'qsub', where
         # '-l' option has value "mem,time,threads args"
-        command += key_mapping[key].format(**key_mapping_vars)
+        command_line += key_mapping[key].format(**key_mapping_vars)
     else:
         eprint("Key '{}' ignored: Undefined variables [{}] in: {}".format(
             key, ", ".join(undefined_args), command_arg
         ))
 
-command += ' {}'.format(jobscript)
+eprint("\nSubmit job command:\n    [{}]".format(command_line))
 
-eprint("Submit job command:", command)
-args = shlex.split(command)
-eprint("\nSubmit job command args:\n      {}".format(args))
-
-p = Popen(args, stdout=PIPE, stderr=PIPE)
+p = Popen(command_line, stdout=PIPE, stderr=PIPE, shell=True)
 output, error = p.communicate()
 if p.returncode != 0:
     sys.stderr.flush()

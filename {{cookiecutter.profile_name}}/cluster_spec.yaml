@@ -25,7 +25,7 @@ __default__:
   command_options:
     # --------- SLURM ---------
     slurm:
-      command: "sbatch --parsable"
+      command: "{{cookiecutter.submission_command_prefix}} sbatch --parsable"
       key_mapping:
         name: " --job-name={name}"
         threads: " -n {threads}"
@@ -38,7 +38,7 @@ __default__:
 
     # --------- PBS ---------
     pbs:
-      command: "qsub"
+      command: "{{cookiecutter.submission_command_prefix}} qsub"
       key_mapping:
         name: " -N sj{jobid}.{name}.{pid}"
         queue: " -q {queue}"
@@ -54,8 +54,11 @@ __default__:
 
     # --------- LSF ---------
     lsf:
-      command: "bsub"
-      # command: "bsub {command_args} /bin/bash -c 'source /opt/conda/.bashrc && source ~/lsf_host.conf && {jobscript}'"
+      # command prefix, normally just "bsub", as for suffix, see 'jobscript' in key_mapping
+      command: "{{cookiecutter.submission_command_prefix}} bsub"
+      # examples:
+      #   command: "bsub"
+      #   command: "cd $HOME && bsub"
 
       key_mapping:
         resources: " -R 'select[mem>{mem_ram}000] rusage[mem={mem_ram}000]'" # in mb
@@ -71,6 +74,9 @@ __default__:
         email: " -N -u {email}"
         docker: "  -a 'docker({docker})'"
         account: " -P {account}"
+        # normally should be last argument, {jobscript} is value provided by the scheduler, you could wrap it here
+        # E.g. " /bin/bash -c 'source /opt/conda/.bashrc && {jobscript}'"
+        jobscript: " {jobscript}"
 
 # --------- Other ---------
 # for other cluster systems see: https://slurm.schedmd.com/rosetta.pdf
