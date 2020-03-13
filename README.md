@@ -1,3 +1,6 @@
+[![JetBrains Research](https://jb.gg/badges/research.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://opensource.org/licenses/MIT)
+
 # Enhanced Generic Profile
 
 This profile configures Snakemake to run on any cluster system. This is an improved version of generic profile (https://github.com/Snakemake-Profiles/generic) with enhanced cluster profile syntax.
