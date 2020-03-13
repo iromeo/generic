@@ -42,6 +42,11 @@ else:
     cluster_param['log'] = "job_log.{}.{}.log".format(
         cluster_param['name'], job_properties['jobid'],
     )
+# make path absolute, normally it is arg for job submission and
+# we don't have guarantees on working directory here, snakemake
+# uses absolute paths in scripts, more over on one of our LSF based
+# clusters we have to run 'bsub' from homedir, not project workdir
+cluster_param['log'] = os.path.abspath(cluster_param['log'])
 
 # overwrite default parameters if defined in rule (or config file)
 if 'threads' in job_properties:
