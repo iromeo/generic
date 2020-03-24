@@ -61,13 +61,13 @@ __default__:
       #   command: "cd $HOME && bsub"
 
       key_mapping:
-        resources: " -R 'select[mem>{mem_ram}000] rusage[mem={mem_ram}000]'" # in mb
+        resources: " -R 'select[mem>{mem_ram}000] rusage[mem={mem_ram}000]'" # `mem` in mb, `mem_ram` in GB
         #resources: " -R 'select[mem>{mem_ram}000,swp>{vmem}000] rusage[mem={mem_ram}000,swp={vmem}000]'"
         name: " -J sj{jobid}.{name}.{pid}"
         queue: " -q {queue}"
         threads: " -n {threads}"
         #vmem: " -v {vmem}000000"  # swap space (virtual memory) kb value, 'mem' is in gb, by default usually no limit
-        mem_ram: " -M {mem_ram}000000"  # ram mem kb value, 'mem_ram' is in gb
+        mem_ram: " -M {mem_ram}000"  # ram mem MB value, 'mem_ram' is in gb
         time: " -W {time}"  # time in minutes, -W [hour:]minute
         log: " -oo {log}_job.log" # rewrite log file, send stderr and stdout to log
         group: " -g {group}"
