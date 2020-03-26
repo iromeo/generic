@@ -6,6 +6,7 @@ __default__:
   # for steps, where memory/threads are not specified in the Snakefile
 
   group: "{{cookiecutter.default_job_group}}"
+  user_group: "{{cookiecutter.default_user_group}}"
   queue: "{{cookiecutter.default_queue}}"
   docker: "{{cookiecutter.default_docker}}" # e.g. "ubuntu:latest"
   email: "{{cookiecutter.default_email}}"
@@ -71,6 +72,7 @@ __default__:
         time: " -W {time}"  # time in minutes, -W [hour:]minute
         log: " -oo {log}_job.log" # rewrite log file, send stderr and stdout to log
         group: " -g {group}"
+        user_group: " -G {user_group}"
         email: " -N -u {email}"
         docker: "  -a 'docker({docker})'"
         account: " -P {account}"
