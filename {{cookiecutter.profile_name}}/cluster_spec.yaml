@@ -14,8 +14,10 @@ __default__:
   time: "{{cookiecutter.default_time_min}}" # minutes
   vmem: "{{cookiecutter.default_mem_GB}}" # GB, max process virtual memory
   mem_ram: "{{cookiecutter.default_mem_GB}}" # GB, max RAM
-  threads: "{{cookiecutter.default_threads}}"
+  threads: "{{cookiecutter.default_threads}}" # slots number, e.g. could be on different hosts
 
+  # Hosts number, e.g. 6 threads could be on the same host if `nodes:1` or split in 2 hosts
+  # (e.g. 5+1 or 4+2 or 3+3) if `nodes:2`
   nodes: 1
 
 # Comma separated options keys list from rule 'params' section which could override default option
@@ -62,8 +64,8 @@ __default__:
       #   command: "cd $HOME && bsub"
 
       key_mapping:
-        resources: " -R 'select[mem>{mem_ram}000] rusage[mem={mem_ram}000]'" # `mem` in mb, `mem_ram` in GB
-        #resources: " -R 'select[mem>{mem_ram}000,swp>{vmem}000] rusage[mem={mem_ram}000,swp={vmem}000]'"
+        resources: " -R 'select[mem>{mem_ram}000] rusage[mem={mem_ram}000] span[hosts={nodes}]'" # `mem` in mb, `mem_ram` in GB
+        #resources: " -R 'select[mem>{mem_ram}000,swp>{vmem}000] rusage[mem={mem_ram}000,swp={vmem}000]'" # mem + swap requirement
         name: " -J sj{jobid}.{name}.{pid}"
         queue: " -q {queue}"
         threads: " -n {threads}"
