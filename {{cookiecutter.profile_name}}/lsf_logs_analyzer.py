@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import argparse
 from glob import glob
 from collections import OrderedDict
@@ -22,8 +23,8 @@ def _cli():
     )
 
     parser.add_argument(
-        "workdir", metavar="PATH",
-        help="Working directory"
+        "path", metavar="PATH",
+        help="Logs root directory or log file path"
     )
 
     parser.add_argument(
@@ -31,16 +32,22 @@ def _cli():
         help="Output path for results table"
     )
 
+    parser.add_argument(
+        "--gb", action="store_true",
+        help="Convert memory usage to GB"
+    )
+
     args = parser.parse_args()
-    workdir = args.workdir
+    input_path = args.path
     output = args.output
+    to_gb = args.gb
 
     ################################
-    metric2details = metric2details_mapping()
+    metric2details = metric2details_mapping(to_gb)
     logs_search_pth = "*.log_job.log"
 
     print("Metrics:", list(metric2details.keys()), file=sys.stderr)
-    print("Working directory:", workdir, file=sys.stderr)
+    print("Input:", input_path, file=sys.stderr)
     print("Output path:", output, file=sys.stderr)
     print("Logs mask:", logs_search_pth, file=sys.stderr)
 
@@ -48,7 +55,7 @@ def _cli():
     column_names = ("Target", "Files", *tag_columns)
     records = []
 
-    rule2metrics, rule2files_count = collect_targets(logs_search_pth, workdir, metric2details)
+    rule2metrics, rule2files_count = collect_targets(logs_search_pth, input_path, metric2details)
     for rule, metric2values in rule2metrics.items():
         files_number = rule2files_count[rule]
         results = process_rule(metric2values, metric2details)
@@ -73,12 +80,17 @@ def strfdelta(time_delta):
     return f"{d*24+h:2d}:{m:2d}:{s:2d}".replace(' ', '0')
 
 
-def collect_targets(ptn, root_dir, metric2details):
+def collect_targets(ptn, input_path, metric2details):
     rule2metrics2values = defaultdict(dict)
     rule2files_count = defaultdict(int)
 
     files_number = 0
-    for fn in glob(f"{root_dir}/**/{ptn}", recursive=True):
+    if os.path.isdir(input_path):
+        files = glob(f"{input_path}/**/{ptn}", recursive=True)
+    else:
+        files = (input_path, )
+
+    for fn in files:
         files_number += 1
 
         file_metrics2values = {}
@@ -131,27 +143,36 @@ def process_rule(metric2values, metric2details):
     return results
 
 
-def metric2details_mapping():
-    return OrderedDict([
+def metric2details_mapping(to_gb):
+    mem_suffix = "gb" if to_gb else "mb"
+    if to_gb:
+        mem_usage_cmd = "np.ceil(10 * np.max(col_values) / 1000) / 10"
+    else:
+        mem_usage_cmd = "np.max(col_values)"
+
+    # here ceil should be, not round, e.g. round(0.0001, 1) = 0, our function gives 0.1
+    max_sec_cmd = "np.max(col_values)"
+    max_hours_cmd = "np.ceil(10 * {} / 3600) / 10".format(max_sec_cmd)
+
+    d = OrderedDict([
         (
             PARSING_ERRORS_COL,
             (None, None, None, "len(col_values)")
         ),
-        ("cpu_time_sec", (
-            ("CPU time :", "float", "sec.", "np.max(col_values)")
-        )),
-        ("max_mem_mb", (
-            ("Max Memory :", "float", "MB", "np.max(col_values)")
-        )),
-        ("avg_mem_mb", (
-            ("Average Memory :", "float", "MB", "np.mean(col_values)")
-        )),
-        ("min_delta_requested_mem_mb", (
-            ("Delta Memory :", "float", "MB", "np.min(col_values)")
-        )),
-        ("max_swap_mb", (
-            ("Max Swap :", "float", "MB", "np.max(col_values)")
-        )),
+        ("cpu_time_sec",  ("CPU time :", "float", "sec.", max_sec_cmd)),
+        ("cpu_time_h",   ("CPU time :", "float", "sec.", max_hours_cmd)),
+        ("run_time_sec", ("Run time :", "float", "sec.", max_sec_cmd)),
+        ("run_time_h",   ("Run time :", "float", "sec.", max_hours_cmd)),
+        ("turnaround_time_sec", ("Turnaround time :", "float", "sec.", max_sec_cmd)),
+        ("turnaround_time_h", ("Turnaround time :", "float", "sec.", max_hours_cmd)),
+        ("requested_mem_" + mem_suffix, ("Total Requested Memory :", "float", "MB", mem_usage_cmd)),
+        ("requested_mem_mb" + mem_suffix, ("Total Requested Memory :", "float", "MB", "np.max(col_values)")),
+        ("max_mem_" + mem_suffix, ("Max Memory :", "float", "MB", mem_usage_cmd)),
+        ("max_swap_" + mem_suffix, ("Max Swap :", "float", "MB", mem_usage_cmd)),
+        ("avg_mem_" + mem_suffix, ("Average Memory :", "float", "MB", mem_usage_cmd)),
+        ("min_delta_requested_mem_" + mem_suffix, ("Delta Memory :", "float", "MB", mem_usage_cmd)),
+        ("max_swap_" + mem_suffix, ("Max Swap :", "float", "MB", mem_usage_cmd)),
+
         ("max_processes", (
             ("Max Processes :", "int", None, "np.max(col_values)")
         )),
@@ -182,7 +203,7 @@ def metric2details_mapping():
              "np.max(np.asarray(max_execution_time_hms)-np.asarray(started_time))")
         )),
     ])
-
+    return d
 
 def match_line(line, metric2details, metric2values):
     line_lower = line.lower().strip()
