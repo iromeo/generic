@@ -37,13 +37,21 @@ def _cli():
         help="Convert memory usage to GB"
     )
 
+    parser.add_argument(
+        "--pnt",
+        help="Use percentile instead of max, value in range 0 ... 100.0",
+        type=float,
+        default=100.0
+    )
+
     args = parser.parse_args()
     input_path = args.path
     output = args.output
     to_gb = args.gb
+    percentile = args.pnt
 
     ################################
-    metric2details = metric2details_mapping(to_gb)
+    metric2details = metric2details_mapping(to_gb, percentile)
     logs_search_pth = "*.log_job.log"
 
     print("Metrics:", list(metric2details.keys()), file=sys.stderr)
@@ -143,15 +151,18 @@ def process_rule(metric2values, metric2details):
     return results
 
 
-def metric2details_mapping(to_gb):
-    mem_suffix = "gb" if to_gb else "mb"
-    if to_gb:
-        mem_usage_cmd = "np.ceil(10 * np.max(col_values) / 1000) / 10"
-    else:
-        mem_usage_cmd = "np.max(col_values)"
+def metric2details_mapping(to_gb, percentile):
+    #max_fun = "np.max(col_values)"
+    max_fun = "np.percentile(col_values, q={}, interpolation='nearest')".format(percentile)
 
+    mem_suffix = "gb" if to_gb else "mb"
+    mem_usage_cmd = max_fun
+    if to_gb:
+        # here ceil should be, not round, e.g. round(0.0001, 1) = 0, our function gives 0.1
+        mem_usage_cmd = "np.ceil(10 * {} / 1000) / 10".format(mem_usage_cmd)
+
+    max_sec_cmd = max_fun
     # here ceil should be, not round, e.g. round(0.0001, 1) = 0, our function gives 0.1
-    max_sec_cmd = "np.max(col_values)"
     max_hours_cmd = "np.ceil(10 * {} / 3600) / 10".format(max_sec_cmd)
 
     d = OrderedDict([
@@ -166,7 +177,6 @@ def metric2details_mapping(to_gb):
         ("turnaround_time_sec", ("Turnaround time :", "float", "sec.", max_sec_cmd)),
         ("turnaround_time_h", ("Turnaround time :", "float", "sec.", max_hours_cmd)),
         ("requested_mem_" + mem_suffix, ("Total Requested Memory :", "float", "MB", mem_usage_cmd)),
-        ("requested_mem_mb" + mem_suffix, ("Total Requested Memory :", "float", "MB", "np.max(col_values)")),
         ("max_mem_" + mem_suffix, ("Max Memory :", "float", "MB", mem_usage_cmd)),
         ("max_swap_" + mem_suffix, ("Max Swap :", "float", "MB", mem_usage_cmd)),
         ("avg_mem_" + mem_suffix, ("Average Memory :", "float", "MB", mem_usage_cmd)),
