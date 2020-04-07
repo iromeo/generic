@@ -29,6 +29,7 @@ Configure default options, e.g:
 profile_name [my_profile]: generic_qsub
 cluster_system [pbs/lsf/slurm]: pbs
 submission_command_prefix []:
+job_custom_workdir []: $HOME
 default_job_group []:
 default_queue []:
 default_docker []:

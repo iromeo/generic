@@ -2,6 +2,7 @@
   "profile_name": "my_profile",
   "cluster_system": "pbs/lsf/slurm",
   "submission_command_prefix": "",
+  "default_job_custom_workdir": "",
   "default_job_group": "",
   "default_user_group": "",
   "default_queue": "",

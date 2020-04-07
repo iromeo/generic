@@ -15,6 +15,7 @@ __default__:
   vmem: "{{cookiecutter.default_mem_GB}}" # GB, max process virtual memory
   mem_ram: "{{cookiecutter.default_mem_GB}}" # GB, max RAM
   threads: "{{cookiecutter.default_threads}}" # slots number, e.g. could be on different hosts
+  job_workdir: "{{cookiecutter.default_job_custom_workdir}}" # job working directory, if not specified defaults will be used
 
   # Hosts number, e.g. 6 threads could be on the same host if `nodes:1` or split in 2 hosts
   # (e.g. 5+1 or 4+2 or 3+3) if `nodes:2`
@@ -30,6 +31,7 @@ __default__:
     slurm:
       command: "{{cookiecutter.submission_command_prefix}} sbatch --parsable"
       key_mapping:
+        # TODO: workdir
         name: " --job-name={name}"
         threads: " -n {threads}"
         vmem: " --mem={vmem}g"
@@ -43,6 +45,7 @@ __default__:
     pbs:
       command: "{{cookiecutter.submission_command_prefix}} qsub"
       key_mapping:
+        job_workdir: " -d {job_workdir}"
         name: " -N sj{jobid}.{name}.{pid}"
         queue: " -q {queue}"
 
@@ -64,6 +67,7 @@ __default__:
       #   command: "cd $HOME && bsub"
 
       key_mapping:
+        job_workdir: " -cwd {job_workdir}"
         resources: " -R 'select[mem>{mem_ram}000] rusage[mem={mem_ram}000] span[hosts={nodes}]'" # `mem` in mb, `mem_ram` in GB
         #resources: " -R 'select[mem>{mem_ram}000,swp>{vmem}000] rusage[mem={mem_ram}000,swp={vmem}000]'" # mem + swap requirement
         name: " -J sj{jobid}.{name}.{pid}"
