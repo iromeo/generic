@@ -56,16 +56,20 @@ if 'threads' in job_properties:
 for key in job_properties["resources"]:
     cluster_param[key] = job_properties["resources"][key]
 
-# params overrides defaults. 'params' section isn't available for job groups
-# e.g.
-# 1. add 'rule_params_options: email, docker' line into your cluster profile.
-# 2. specify 'email=user@domain.com, docker=ubuntu:latest' in rule 'params:'
-# section, so cluster will submit a task with specified e-mail and docker
-# container instead of defaults
+# To override non-numeric resources you could use params section.
+# Use params keys with special naming convention: 'resources_KEY' to override
+# 'KEY' option in job's cluster params, e.g.:
+#       params:
+#           resources_email="user@domain.com",
+#           resources_docker="ubuntu:latest"
+# to change default 'email' and 'docker' while job submission
+#
+# !!!! this feature not available for job groups because params section isn't
+# !!! available here for them
 job_params = job_properties.get("params", {})
-rule_params_options = cluster_param.get("rule_params_options", "")
-for key in job_params.keys() & {k.strip() for k in rule_params_options.split(',')}:
-    cluster_param[key] = job_params[key]
+job_resources_in_params = {k[10:]: v for k, v in job_params.items() if k.startswith("resources_")}
+for k, v in job_resources_in_params.items():
+    cluster_param[k] = v
 
 # check which system you are on and load command_options
 command_options = cluster_param['command_options'][cluster_param['system']]
